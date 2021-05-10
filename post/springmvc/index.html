@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>SpringMVC | Loro</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://chase-don.github.io//favicon.ico?v=1620665058037">
+<link rel="stylesheet" href="https://chase-don.github.io//styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="1. 回顾MVC
+1.1 什么是MVC
+
+模型（dao，service）、视图（jsp）、控制器（servlet）的简写，是一种软件设计规范
+是将业务逻辑，数据，现实分离的方法来组织代码
+MVC主要作用是降低了视图和业务逻辑间的双向耦合
+M..." />
+    <meta name="keywords" content="SSM,学习笔记" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://chase-don.github.io/">
+        <img src="https://chase-don.github.io//images/avatar.png?v=1620665058037" class="site-logo">
+        <h1 class="site-title">Loro</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+          <a class="social-link" href="https://github.com/Chase-don" target="_blank">
+            <i class="fab fa-github"></i>
+          </a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      表现不俗
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://chase-don.github.io//atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">SpringMVC</h2>
+            <div class="post-date">2021-02-04</div>
+            
+            <div class="post-content" v-pre>
+              <h2 id="1-回顾mvc">1. 回顾MVC</h2>
+<h3 id="11-什么是mvc">1.1 什么是MVC</h3>
+<ul>
+<li>模型（dao，service）、视图（jsp）、控制器（servlet）的简写，是一种软件设计规范</li>
+<li>是将业务逻辑，数据，现实分离的方法来组织代码</li>
+<li>MVC主要作用是<strong>降低了视图和业务逻辑间的双向耦合</strong></li>
+<li>MVC不是一种设计模式，<strong>MVC是一种架构模式。</strong></li>
+</ul>
+<img src="file://D:/博客源文件/post-images/image-20210418182624037.png" alt="image-20210418182624037" style="zoom:80%;" />
+<p>过程：</p>
+<ol>
+<li>用户发请求</li>
+<li>Servlet接受请求数据，并调用对应的业务逻辑方法</li>
+<li>业务处理完毕，返回更新后的数据给servlet</li>
+<li>servlet转向到jsp，由jsp来渲染页面</li>
+<li>响应给前端更新后的页面</li>
+</ol>
+<blockquote>
+<p>职责分析：</p>
+<p><strong>Controller：控制器</strong></p>
+<ol>
+<li>取得表单数据</li>
+<li>调用业务逻辑</li>
+<li>转向指定的页面</li>
+</ol>
+<p><strong>Model：模型</strong></p>
+<ol>
+<li>业务逻辑</li>
+<li>保存数据的状态</li>
+</ol>
+<p>View：视图</p>
+<ol>
+<li>显示页面</li>
+</ol>
+</blockquote>
+<h2 id="2-回顾servlet">2. 回顾Servlet</h2>
+<blockquote>
+<p>编写一个Servlet类，用来处理用户的请求</p>
+</blockquote>
+<pre><code class="language-java">public class HelloServlet extends HttpServlet {
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        //1. 获取前端参数
+        String method = req.getParameter(&quot;method&quot;);
+        if (method.equals(&quot;add&quot;)){
+            req.getSession().setAttribute(&quot;msg&quot;,&quot;执行了add方法&quot;);
+        }
+        if (method.equals(&quot;delete&quot;)){
+            req.getSession().setAttribute(&quot;msg&quot;,&quot;执行了delete方法&quot;);
+        }
+        //2. 调用业务层
+        //3. 视图转发或者重定向
+        req.getRequestDispatcher(&quot;/WEB-INF/jsp/test.jsp&quot;).forward(req, resp);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        doGet(req,resp);
+    }
+}
+</code></pre>
+<blockquote>
+<p>编写Hello.jsp，在WEB-INF目录下新建一个jsp的文件夹，新建hello.jsp</p>
+</blockquote>
+<pre><code class="language-xml">&lt;%@ page contentType=&quot;text/html;charset=UTF-8&quot; language=&quot;java&quot; %&gt;
+&lt;html&gt;
+&lt;head&gt;
+   &lt;title&gt;Kuangshen&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+${msg}
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<blockquote>
+<p>在web.xml中注册Servlet</p>
+</blockquote>
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;web-app xmlns=&quot;http://xmlns.jcp.org/xml/ns/javaee&quot;
+         xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+         xsi:schemaLocation=&quot;http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd&quot;
+         version=&quot;4.0&quot;&gt;
+
+    &lt;servlet&gt;
+        &lt;servlet-name&gt;hello&lt;/servlet-name&gt;
+        &lt;servlet-class&gt;cn.edu.bupt.servlet.HelloServlet&lt;/servlet-class&gt;
+    &lt;/servlet&gt;
+    &lt;servlet-mapping&gt;
+        &lt;servlet-name&gt;hello&lt;/servlet-name&gt;
+        &lt;url-pattern&gt;/hello&lt;/url-pattern&gt;
+    &lt;/servlet-mapping&gt;
+
+&lt;!--    &lt;session-config&gt;--&gt;
+&lt;!--        &lt;session-timeout&gt;15&lt;/session-timeout&gt;--&gt;
+&lt;!--    &lt;/session-config&gt;--&gt;
+
+    &lt;welcome-file-list&gt;
+        &lt;welcome-file&gt;index.jsp&lt;/welcome-file&gt;
+    &lt;/welcome-file-list&gt;
+
+&lt;/web-app&gt;
+</code></pre>
+<blockquote>
+<p>配置Tomcat，并启动测试</p>
+</blockquote>
+<pre><code class="language-url">- localhost:8080/hello?method=add
+- localhost:8080/hello?method=delete
+</code></pre>
+<h2 id="3-什么是springmvc">3. 什么是SpringMVC</h2>
+<h3 id="31-相关概述">3.1 相关概述</h3>
+<p>Spring MVC是Spring Framework的一部分，是基于Java实现MVC的轻量级Web框架。</p>
+<p><strong>Spring MVC的特点：</strong></p>
+<ol>
+<li>轻量级，简单易学</li>
+<li>高效 , 基于请求响应的MVC框架</li>
+<li>与Spring兼容性好，无缝结合</li>
+<li>约定优于配置</li>
+<li>功能强大：RESTful、数据验证、格式化、本地化、主题等</li>
+<li>简洁灵活</li>
+</ol>
+<h3 id="32-中心控制器">3.2 中心控制器</h3>
+<p><strong>Spring的web框架<mark>围绕DispatcherServlet设计</mark>。DispatcherServlet的作用是<mark>将请求分发到不同的处理器</mark></strong>。从Spring 2.5开始，使用Java 5或者以上版本的用户可以采用基于注解的controller声明方式。</p>
+<p>Spring MVC框架像许多其他MVC框架一样, <strong>以请求为驱动</strong> , <strong>围绕一个中心Servlet分派请求及提供其他功能</strong>，<strong>DispatcherServlet是一个实际的Servlet (它继承自HttpServlet 基类)</strong></p>
+<figure data-type="image" tabindex="1"><img src="https://chase-don.github.io//post-images/image-20210418221316040.png" alt="image-20210418221316040" loading="lazy"></figure>
+<p>SpringMVC的原理如下图所示：</p>
+<p>​		当发起请求时被前置的控制器拦截到请求，根据请求参数生成代理请求，找到请求对应的实际控制器，控制器处理请求，创建数据模型，访问数据库，将模型响应给中心控制器，控制器使用模型与视图渲染视图结果，将结果返回给中心控制器，再将结果返回给请求者。</p>
+<figure data-type="image" tabindex="2"><img src="https://chase-don.github.io//post-images/image-20210418222155124.png" alt="image-20210418222155124" loading="lazy"></figure>
+<h2 id="4-第一个mvc程序">4. 第一个MVC程序</h2>
+<ol>
+<li>
+<p>新建一个Moudle ， springmvc-02-hello ， 添加web的支持！</p>
+</li>
+<li>
+<p>确定导入了SpringMVC 的依赖！</p>
+</li>
+<li>
+<p>配置web.xml  ， 注册DispatcherServlet</p>
+</li>
+</ol>
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;web-app xmlns=&quot;http://xmlns.jcp.org/xml/ns/javaee&quot;
+         xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+         xsi:schemaLocation=&quot;http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd&quot;
+         version=&quot;4.0&quot;&gt;
+
+    &lt;!--1.注册DispatcherServlet--&gt;
+    &lt;servlet&gt;
+        &lt;servlet-name&gt;springmvc&lt;/servlet-name&gt;
+        &lt;servlet-class&gt;org.springframework.web.servlet.DispatcherServlet&lt;/servlet-class&gt;
+        &lt;!--关联一个springmvc的配置文件:【servlet-name】-servlet.xml--&gt;
+        &lt;init-param&gt;
+            &lt;param-name&gt;contextConfigLocation&lt;/param-name&gt;
+            &lt;param-value&gt;classpath:springmvc-servlet.xml&lt;/param-value&gt;
+        &lt;/init-param&gt;
+        &lt;!--启动级别-1--&gt;
+        &lt;load-on-startup&gt;1&lt;/load-on-startup&gt;
+    &lt;/servlet&gt;
+
+    &lt;!--/ 匹配所有的请求；（不包括.jsp）--&gt;
+    &lt;!--/* 匹配所有的请求；（包括.jsp）--&gt;
+    &lt;servlet-mapping&gt;
+        &lt;servlet-name&gt;springmvc&lt;/servlet-name&gt;
+        &lt;url-pattern&gt;/&lt;/url-pattern&gt;
+    &lt;/servlet-mapping&gt;
+&lt;/web-app&gt;
+</code></pre>
+<p>其中：<url-pattern></url-pattern>中</p>
+<p><mark><strong>如果是：/         匹配所有的请求；（不包括.jsp）</strong></mark><br>
+<mark><em><em>如果是：/</em>       匹配所有的请求；（包括.jsp）</em>*</mark></p>
+<ol start="4">
+<li>编写SpringMVC 的 配置文件！名称：springmvc-servlet.xml  : [servletname]-servlet.xml（命名要求格式）</li>
+</ol>
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
+       xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+       xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd&quot;&gt;
+
+    &lt;!--添加 处理映射器--&gt;
+    &lt;bean class=&quot;org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping&quot;/&gt;
+    &lt;!--添加 处理器适配器--&gt;
+    &lt;bean class=&quot;org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter&quot;/&gt;
+
+
+    &lt;!--视图解析器:DispatcherServlet给他的ModelAndView--&gt;
+    &lt;bean class=&quot;org.springframework.web.servlet.view.InternalResourceViewResolver&quot; id=&quot;InternalResourceViewResolver&quot;&gt;
+        &lt;!--前缀--&gt;
+        &lt;property name=&quot;prefix&quot; value=&quot;/WEB-INF/jsp/&quot;/&gt;
+        &lt;!--后缀--&gt;
+        &lt;property name=&quot;suffix&quot; value=&quot;.jsp&quot;/&gt;
+    &lt;/bean&gt;
+
+    &lt;!--将自己的类交给SpringIOC容器，注册bean--&gt;
+    &lt;!--Handler--&gt;
+    &lt;bean id=&quot;/hello&quot; class=&quot;cn.edu.bupt.controller.HelloController&quot;/&gt;
+&lt;/beans&gt;
+</code></pre>
+<ol start="5">
+<li>编写我们要操作业务Controller ，要么实现Controller接口，<mark><strong>要么增加注解；需要返回一个ModelAndView</strong></mark>，装数据，封视图；</li>
+</ol>
+<pre><code class="language-java">import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.Controller;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+
+//注意：这里我们先导入Controller接口
+public class HelloController implements Controller {
+
+    public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        //ModelAndView 模型和视图
+        ModelAndView mv = new ModelAndView();
+
+        //封装对象，放在ModelAndView中。Model
+        mv.addObject(&quot;msg&quot;,&quot;HelloSpringMVC!&quot;);
+        //封装要跳转的视图，放在ModelAndView中
+        mv.setViewName(&quot;hello&quot;); //: /WEB-INF/jsp/hello.jsp
+        return mv;
+    }
+}
+</code></pre>
+<ol start="6">
+<li>写要跳转的jsp页面，显示ModelandView存放的数据，以及我们的正常页面；</li>
+</ol>
+<pre><code class="language-xml">&lt;%@ page contentType=&quot;text/html;charset=UTF-8&quot; language=&quot;java&quot; %&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;Title&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+${msg}
+
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<ol start="7">
+<li>配置Tomcat启动测试！</li>
+</ol>
+<figure data-type="image" tabindex="3"><img src="https://chase-don.github.io//post-images/image-20210419004740294.png" alt="image-20210419004740294" loading="lazy"></figure>
+<p><strong>测试过程中遇到的问题：访问出现404，排查步骤：</strong></p>
+<ol>
+<li>查看控制台输出，看一下是不是缺少了什么jar包。</li>
+<li>如果jar包存在，显示无法输出，就在IDEA的项目发布中，添加lib依赖！</li>
+<li>重启Tomcat 即可解决！</li>
+</ol>
+<h3 id="熟悉掌握下图的执行流程"><strong>熟悉掌握下图的执行流程</strong></h3>
+<figure data-type="image" tabindex="4"><img src="https://chase-don.github.io//post-images/image-20210420002455704.png" alt="image-20210420002455704" loading="lazy"></figure>
+<p>图为SpringMVC的一个较完整的流程图，实线表示SpringMVC框架提供的技术，不需要开发者实现，虚线表示需要开发者实现。</p>
+<p><strong>简要分析执行流程</strong></p>
+<ol>
+<li>
+<p>DispatcherServlet表示前置控制器，是整个SpringMVC的控制中心。用户发出请求，DispatcherServlet接收请求并拦截请求。</p>
+<p>我们假设请求的url为 : http://localhost:8080/SpringMVC/hello</p>
+<p><strong>如上url拆分成三部分：</strong></p>
+<p>http://localhost:8080服务器域名</p>
+<p>SpringMVC部署在服务器上的web站点</p>
+<p>hello表示控制器</p>
+<p>通过分析，如上url表示为：请求位于服务器localhost:8080上的SpringMVC站点的hello控制器。</p>
+</li>
+<li>
+<p>HandlerMapping为处理器映射。DispatcherServlet调用HandlerMapping,HandlerMapping根据请求url查找Handler。</p>
+</li>
+<li>
+<p>HandlerExecution表示具体的Handler,其主要作用是根据url查找控制器，如上url被查找控制器为：hello。</p>
+</li>
+<li>
+<p>HandlerExecution将解析后的信息传递给DispatcherServlet,如解析控制器映射等。</p>
+</li>
+<li>
+<p>HandlerAdapter表示处理器适配器，其按照特定的规则去执行Handler。</p>
+</li>
+<li>
+<p>Handler让具体的Controller执行。</p>
+</li>
+<li>
+<p>Controller将具体的执行信息返回给HandlerAdapter,如ModelAndView。</p>
+</li>
+<li>
+<p>HandlerAdapter将视图逻辑名或模型传递给DispatcherServlet。</p>
+</li>
+<li>
+<p>DispatcherServlet调用视图解析器(ViewResolver)来解析HandlerAdapter传递的逻辑视图名。</p>
+</li>
+<li>
+<p>视图解析器将解析的逻辑视图名传给DispatcherServlet。</p>
+</li>
+<li>
+<p>DispatcherServlet根据视图解析器解析的视图结果，调用具体的视图。</p>
+</li>
+<li>
+<p>最终视图呈现给用户。</p>
+</li>
+</ol>
+<h2 id="5-用注解开发springmvc">5. 用注解开发SpringMVC</h2>
+<h3 id="51-大致过程及代码">5.1 大致过程及代码</h3>
+<ol>
+<li><strong>完善相关的配置和依赖等</strong></li>
+<li><strong>配置web.xml</strong></li>
+</ol>
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;web-app xmlns=&quot;http://xmlns.jcp.org/xml/ns/javaee&quot;
+         xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+         xsi:schemaLocation=&quot;http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd&quot;
+         version=&quot;4.0&quot;&gt;
+
+    &lt;!--注册servlet--&gt;
+    &lt;servlet&gt;
+        &lt;servlet-name&gt;SpringMVC&lt;/servlet-name&gt;
+        &lt;servlet-class&gt;org.springframework.web.servlet.DispatcherServlet&lt;/servlet-class&gt;
+        &lt;init-param&gt;
+            &lt;param-name&gt;contextConfigLocation&lt;/param-name&gt;
+            &lt;param-value&gt;classpath:springmvc-servlet.xml&lt;/param-value&gt;
+        &lt;/init-param&gt;
+        &lt;!-- 启动顺序，数字越小，启动越早 --&gt;
+        &lt;load-on-startup&gt;1&lt;/load-on-startup&gt;
+    &lt;/servlet&gt;
+
+    &lt;!--所有请求都会被springmvc拦截--&gt;
+    &lt;servlet-mapping&gt;
+        &lt;servlet-name&gt;SpringMVC&lt;/servlet-name&gt;
+        &lt;url-pattern&gt;/&lt;/url-pattern&gt;
+    &lt;/servlet-mapping&gt;
+
+&lt;/web-app&gt;
+</code></pre>
+<ol start="3">
+<li><strong>添加springmvc-servlet.xml配置文件</strong></li>
+</ol>
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
+       xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+       xmlns:context=&quot;http://www.springframework.org/schema/context&quot;
+       xmlns:mvc=&quot;http://www.springframework.org/schema/mvc&quot;
+       xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       https://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/mvc
+       https://www.springframework.org/schema/mvc/spring-mvc.xsd&quot;&gt;
+
+    &lt;!-- 自动扫描包，让指定包下的注解生效,由IOC容器统一管理 --&gt;
+    &lt;context:component-scan base-package=&quot;cn.edu.bupt.controller&quot;/&gt;
+
+    &lt;!-- 让Spring MVC不处理静态资源 比如： .css  .js  .html  .mp3  .mp4--&gt;
+    &lt;mvc:default-servlet-handler /&gt;
+
+    &lt;!--
+    支持mvc注解驱动 (处理映射器 和 处理适配器)
+        在spring中一般采用@RequestMapping注解来完成映射关系
+        要想使@RequestMapping注解生效
+        必须向上下文中注册DefaultAnnotationHandlerMapping
+        和一个AnnotationMethodHandlerAdapter实例
+        这两个实例分别在类级别和方法级别处理。
+        而annotation-driven配置帮助我们自动完成上述两个实例的注入。
+     --&gt;
+    &lt;mvc:annotation-driven /&gt;
+
+
+    &lt;!-- 视图解析器 --&gt;
+    &lt;bean class=&quot;org.springframework.web.servlet.view.InternalResourceViewResolver&quot;
+          id=&quot;internalResourceViewResolver&quot;&gt;
+        &lt;!-- 前缀 --&gt;
+        &lt;property name=&quot;prefix&quot; value=&quot;/WEB-INF/jsp/&quot; /&gt;
+        &lt;!-- 后缀 --&gt;
+        &lt;property name=&quot;suffix&quot; value=&quot;.jsp&quot; /&gt;
+    &lt;/bean&gt;
+
+&lt;/beans&gt;
+</code></pre>
+<ol start="4">
+<li><strong>创建Controller</strong></li>
+</ol>
+<pre><code class="language-java">package cn.edu.bupt.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+@RequestMapping(&quot;/hello&quot;)
+public class HelloController {
+
+    //真实访问地址 --&gt;  localhost:8080/hello/h1
+    @RequestMapping(&quot;/h1&quot;)
+    public String hello(Model model) {
+        //封装数据（向模型中添加属性msg与值，可以在jsp页面中取出并渲染）
+        model.addAttribute(&quot;msg&quot;, &quot;Hello,SpringMVCAnnotation&quot;);
+
+        // 会被视图解析器处理 ---&gt;  /WEB-INF/jsp/hello.jsp
+        return &quot;hello&quot;;
+    }
+}
+</code></pre>
+<ul>
+<li>@Controller是为了让Spring IOC容器初始化时自动扫描到；</li>
+<li>@RequestMapping是为了映射请求路径，这里因为类与方法上都有映射所以访问时应该是/hello/h1；</li>
+<li>方法中声明Model类型的参数是为了把Action中的数据带到视图中；</li>
+<li>方法返回的结果是视图的名称hello，加上配置文件中的前后缀变成WEB-INF/jsp/<strong>hello</strong>.jsp。</li>
+</ul>
+<ol start="5">
+<li>
+<p><strong>创建视图层</strong></p>
+</li>
+<li>
+<p>在WEB-INF/ jsp目录中创建hello.jsp ， 视图可以直接取出并展示从Controller带回的信息；</p>
+</li>
+<li>
+<p>可以通过EL表示取出Model中存放的值，或者对象；</p>
+</li>
+</ol>
+<pre><code class="language-xml">&lt;%@ page contentType=&quot;text/html;charset=UTF-8&quot; language=&quot;java&quot; %&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;Title&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+${msg}
+
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<ol start="6">
+<li>
+<p><strong>配置Tomcat运行</strong></p>
+<p>配置Tomcat ，  开启服务器 ， 访问 对应的请求路径！</p>
+</li>
+</ol>
+<h3 id="52-实现步骤小结">5.2 实现步骤小结：</h3>
+<ol>
+<li>新建一个web项目</li>
+<li>导入相关jar包</li>
+<li>编写web.xml , 注册DispatcherServlet</li>
+<li>编写springmvc配置文件</li>
+<li>接下来就是去创建对应的控制类 , controller</li>
+<li>最后完善前端视图和controller之间的对应</li>
+<li>测试运行调试.</li>
+</ol>
+<p><mark>使用springMVC必须配置的三大件：</mark></p>
+<p><mark><strong>处理器映射器、处理器适配器、视图解析器</strong></mark>（切记！！！！在springmvc-servlet.xml中配置！  web.xml就配置servlert【DispatchServlet】）</p>
+<p><mark>通常，我们只需要<strong>手动配置视图解析器</strong>，而<strong>处理器映射器</strong>和<strong>处理器适配器</strong>只需要开启<strong>注解驱动</strong>即可，而省去了大段的xml配置</mark></p>
+<h2 id="6-controller-配置总结">6. Controller 配置总结</h2>
+<h3 id="61-控制器controller">6.1 控制器Controller</h3>
+<ul>
+<li>控制器复杂提供访问应用程序的行为，通常通过<strong>接口定义或注解定义</strong>两种方法实现。</li>
+<li>控制器负责解析用户的请求并将其转换为一个模型。</li>
+<li>在Spring MVC中一个控制器类可以包含多个方法</li>
+<li>在Spring MVC中，对于Controller的配置方式有很多种</li>
+</ul>
+<h3 id="62-controller方式">6.2 Controller方式</h3>
+<h4 id="621-实现controller接口代码省略看springmvc-03">6.2.1 实现Controller接口（代码省略，看springmvc-03）</h4>
+<ul>
+<li>
+<p>实现接口Controller定义控制器是比较老的方法，基本不用</p>
+</li>
+<li>
+<p>缺点是：一个控制器中只有一个方法，如果要多个方法则需要定义多个Controller；定义的方式比较麻烦；</p>
+</li>
+</ul>
+<h4 id="622-使用注解controller">6.2.2 使用注解@Controller</h4>
+<ul>
+<li>@Controller注解类型用于声明Spring类的实例是一个控制器（在讲IOC时还提到了另外3个注解）；
+<ul>
+<li>@Service</li>
+<li>@Component</li>
+<li>@Repository</li>
+</ul>
+</li>
+<li>Spring可以使用扫描机制来找到应用程序中所有基于注解的控制器类，为了保证Spring能找到你的控制器，需要在配置文件中声明组件扫描。</li>
+</ul>
+<blockquote>
+<p>springmvc-servlet.xml</p>
+</blockquote>
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
+       xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+       xmlns:context=&quot;http://www.springframework.org/schema/context&quot;
+       xmlns:mvc=&quot;http://www.springframework.org/schema/mvc&quot;
+       xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       https://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/mvc
+       https://www.springframework.org/schema/mvc/spring-mvc.xsd&quot;&gt;
+
+
+    &lt;!--映射器，适配器以及解析器是springmvc的核心三要素！--&gt;
+    &lt;context:component-scan base-package=&quot;cn.edu.bupt.controller&quot;/&gt;
+    &lt;!--过滤静态资源--&gt;
+&lt;!--    &lt;mvc:default-servlet-handler/&gt;--&gt;
+&lt;!--    &lt;mvc:annotation-driven/&gt;--&gt;
+
+
+    &lt;!--视图解析器:DispatcherServlet给他的ModelAndView--&gt;
+    &lt;bean class=&quot;org.springframework.web.servlet.view.InternalResourceViewResolver&quot; id=&quot;InternalResourceViewResolver&quot;&gt;
+        &lt;!--前缀--&gt;
+        &lt;property name=&quot;prefix&quot; value=&quot;/WEB-INF/jsp/&quot;/&gt;
+        &lt;!--后缀--&gt;
+        &lt;property name=&quot;suffix&quot; value=&quot;.jsp&quot;/&gt;
+    &lt;/bean&gt;
+
+&lt;/beans&gt;
+</code></pre>
+<ul>
+<li>
+<p>增加一个ControllerTest2类，使用注解实现；</p>
+<pre><code class="language-java">package cn.edu.bupt.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller  // 用了这个注解代表这个类会被spring接管，
+             // 被这个注解所注解的类中的所有方法，如果返回值是String，并且有具体页面可以跳转，那么就会被视图解析器解析
+@RequestMapping(&quot;/hello&quot;)
+public class ControllerTest2 {
+
+    @RequestMapping(&quot;/test2&quot;)
+    public String test1(Model model) {
+        model.addAttribute(&quot;msg&quot;, &quot;ControllerTest2&quot;);
+        return &quot;test&quot;;   //返回给视图解析器去拼凑 --&gt; /WEB-INF/jsp/test.jsp
+    }
+
+
+    @RequestMapping(&quot;/test3&quot;)
+    public String test3(Model model) {
+        model.addAttribute(&quot;msg&quot;, &quot;test3&quot;);
+        return &quot;test&quot;;   //返回给视图解析器去拼凑 --&gt; /WEB-INF/jsp/test.jsp
+    }
+
+}
+</code></pre>
+</li>
+<li>
+<p>运行tomcat测试</p>
+</li>
+</ul>
+<p><strong>可以发现，我们的两个请求都可以指向一个视图，但是页面结果的结果是不一样的，从这里可以看出<mark>视图是被复用的，而控制器与视图之间是弱偶合关系</mark>。</strong></p>
+<p><strong>注解方式是平时使用的最多的方式！</strong></p>
+<h3 id="63-requestmapping说明">6.3 @RequestMapping说明</h3>
+<p><strong>@RequestMapping</strong></p>
+<ul>
+<li>
+<p>@RequestMapping注解用于映射url到控制器类或一个特定的处理程序方法。<strong><mark>可用于类或方法上</mark></strong>。用于类上，表示类中的所有响应请求的方法都是以该地址作为父路径。</p>
+</li>
+<li>
+<p>为了测试结论更加准确，我们可以加上一个项目名测试 myweb</p>
+</li>
+<li>
+<p>只注解在方法上面</p>
+<pre><code class="language-java">@Controller
+public class TestController {
+   @RequestMapping(&quot;/h1&quot;)
+   public String test(){
+       return &quot;test&quot;;
+  }
+}
+</code></pre>
+<p>访问路径：http://localhost:8080 / 项目名 / h1</p>
+</li>
+<li>
+<p>同时注解类与方法</p>
+<pre><code class="language-java">@Controller
+@RequestMapping(&quot;/admin&quot;)
+public class TestController {
+   @RequestMapping(&quot;/h1&quot;)
+   public String test(){
+       return &quot;test&quot;;
+  }
+}
+</code></pre>
+<p>访问路径：http://localhost:8080 / 项目名/ admin /h1  , 需要先指定类的路径再指定方法的路径；</p>
+</li>
+</ul>
+<h2 id="7-restful-风格">7. RestFul 风格</h2>
+<h4 id="概念"><strong>概念</strong></h4>
+<p>Restful就是一个资源定位及资源操作的风格。不是标准也不是协议，只是一种风格。基于这个风格设计的软件可以更简洁，更有层次，更易于实现缓存等机制。</p>
+<h4 id="使用method属性指定请求类型"><strong>使用method属性指定请求类型</strong></h4>
+<pre><code class="language-java">@Controller
+public class RestFulController {
+
+    //原来的：    http://localhost:8080/add?a=1&amp;b=2
+    //RestFul：   http://localhost:8080/add/1/2   ----&gt;   需要在a和b上加注解 @PathVariable
+
+//    @RequestMapping(&quot;/add/{a}/{b}&quot;)
+    @RequestMapping(value = &quot;/add/{a}/{b}&quot;, method = RequestMethod.POST)
+//    @GetMapping(&quot;/add/{a}/{b}&quot;)
+    public String test1(@PathVariable int a, @PathVariable int b, Model model) {
+        int res = a + b;
+        model.addAttribute(&quot;msg&quot;, &quot;结果1为&quot; + res);
+        return &quot;test&quot;;
+    }
+}
+</code></pre>
+<p><strong>我们使用浏览器地址栏进行访问默认是Get请求，会报错405：</strong></p>
+<figure data-type="image" tabindex="5"><img src="https://chase-don.github.io//post-images/image-20210420202222400.png" alt="image-20210420202222400" loading="lazy"></figure>
+<h4 id="学习测试正确代码和演变情况">学习测试（正确代码和演变情况）</h4>
+<pre><code class="language-java">@Controller
+public class RestFulController {
+
+    //原来的：    http://localhost:8080/add?a=1&amp;b=2
+    //RestFul：   http://localhost:8080/add/1/2   ----&gt;   需要在a和b上加注解 @PathVariable
+
+//    @RequestMapping(&quot;/add/{a}/{b}&quot;)
+//    @RequestMapping(value = &quot;/add/{a}/{b}&quot;, method = RequestMethod.POST)
+    @GetMapping(&quot;/add/{a}/{b}&quot;)
+    public String test1(@PathVariable int a, @PathVariable int b, Model model) {
+        int res = a + b;
+        model.addAttribute(&quot;msg&quot;, &quot;结果1为&quot; + res);
+        return &quot;test&quot;;
+    }
+
+    @PostMapping(&quot;/add/{a}/{b}&quot;)
+    public String test2(@PathVariable int a, @PathVariable int b, Model model) {
+        int res = a + b;
+        model.addAttribute(&quot;msg&quot;, &quot;结果2为&quot; + res);
+        return &quot;test&quot;;
+    }
+}
+</code></pre>
+<h4 id="小结"><strong>小结：</strong></h4>
+<p>Spring MVC 的 @RequestMapping 注解能够处理 HTTP 请求的方法, 比如 GET, PUT, POST, DELETE 以及 PATCH。</p>
+<p><strong>所有的地址栏请求默认都会是 HTTP GET 类型的。</strong></p>
+<p>方法级别的注解变体有如下几个：组合注解</p>
+<pre><code>@GetMapping
+@PostMapping
+@PutMapping
+@DeleteMapping
+@PatchMapping
+</code></pre>
+<p>@GetMapping 是一个组合注解，平时使用的会比较多！</p>
+<p>它所扮演的是 <strong>@RequestMapping(method =RequestMethod.GET)</strong> 的一个快捷方式。</p>
+<h2 id="8-mvc中的重定向和转发">8. MVC中的重定向和转发</h2>
+<p>https://mp.weixin.qq.com/s?__biz=Mzg2NTAzMTExNg==&amp;mid=2247483998&amp;idx=1&amp;sn=97c417a2c1484d694c761a2ad27f217d&amp;scene=19#wechat_redirect</p>
+<p><strong>通过SpringMVC来实现转发和重定向 - 无需视图解析器；</strong></p>
+<p>测试前，需要将视图解析器注释掉</p>
+<pre><code class="language-java">@Controller
+public class ResultSpringMVC {
+   @RequestMapping(&quot;/rsm/t1&quot;)
+   public String test1(){
+       //转发
+       return &quot;/index.jsp&quot;;
+  }
+
+   @RequestMapping(&quot;/rsm/t2&quot;)
+   public String test2(){
+       //转发二
+       return &quot;forward:/index.jsp&quot;;
+  }
+
+   @RequestMapping(&quot;/rsm/t3&quot;)
+   public String test3(){
+       //重定向
+       return &quot;redirect:/index.jsp&quot;;
+  }
+}
+</code></pre>
+<p><strong>通过SpringMVC来实现转发和重定向 - 有视图解析器；</strong></p>
+<p>重定向 , 不需要视图解析器 , 本质就是重新请求一个新地方嘛 , 所以注意路径问题.</p>
+<p>可以重定向到另外一个请求实现 .</p>
+<pre><code class="language-java">@Controller
+public class ResultSpringMVC2 {
+   @RequestMapping(&quot;/rsm2/t1&quot;)
+   public String test1(){
+       //转发
+       return &quot;test&quot;;
+  }
+
+   @RequestMapping(&quot;/rsm2/t2&quot;)
+   public String test2(){
+       //重定向
+       return &quot;redirect:/index.jsp&quot;;
+       //return &quot;redirect:hello.do&quot;; //hello.do为另一个请求/
+  }
+
+}
+</code></pre>
+<h2 id="9-乱码问题">9. 乱码问题</h2>
+<h3 id="91-测试步骤">9.1 测试步骤：</h3>
+<p>1、我们可以在首页编写一个提交的表单</p>
+<pre><code class="language-xml">&lt;form action=&quot;/e/t&quot; method=&quot;post&quot;&gt;
+ &lt;input type=&quot;text&quot; name=&quot;name&quot;&gt;
+ &lt;input type=&quot;submit&quot;&gt;
+&lt;/form&gt;
+</code></pre>
+<p>2、后台编写对应的处理类</p>
+<pre><code class="language-java">@Controller
+public class Encoding {
+   @RequestMapping(&quot;/e/t&quot;)
+   public String test(Model model,String name){
+       model.addAttribute(&quot;msg&quot;,name); //获取表单提交的值
+       return &quot;test&quot;; //跳转到test页面显示输入的值
+  }
+}
+</code></pre>
+<p>3、输入中文测试，发现乱码</p>
+<figure data-type="image" tabindex="6"><img src="https://mmbiz.qpic.cn/mmbiz_png/uJDAUKrGC7IY4LDnTZkk5dLWKMlUlx0gqJOSOA4PQnmhg0rYQYexQXAvUWXvBRf8kN3hk6dDzHxC3w97QicX9XQ/640?wx_fmt=png&amp;tp=webp&amp;wxfrom=5&amp;wx_lazy=1&amp;wx_co=1" alt="图片" loading="lazy"></figure>
+<p>以前乱码问题通过过滤器解决 , 而<strong>SpringMVC给我们提供了一个过滤器 , 可以在web.xml中配置</strong> .</p>
+<p>修改了xml文件需要重启服务器！</p>
+<pre><code class="language-xml">&lt;filter&gt;
+   &lt;filter-name&gt;encoding&lt;/filter-name&gt;
+   &lt;filter-class&gt;org.springframework.web.filter.CharacterEncodingFilter&lt;/filter-class&gt;
+   &lt;init-param&gt;
+       &lt;param-name&gt;encoding&lt;/param-name&gt;
+       &lt;param-value&gt;utf-8&lt;/param-value&gt;
+   &lt;/init-param&gt;
+&lt;/filter&gt;
+&lt;filter-mapping&gt;
+   &lt;filter-name&gt;encoding&lt;/filter-name&gt;
+   &lt;url-pattern&gt;/*&lt;/url-pattern&gt;
+&lt;/filter-mapping&gt;
+</code></pre>
+<p>但是我们发现 , 有些极端情况下.这个过滤器对get的支持不好 .</p>
+<h3 id="92-还解决不了乱码的话的处理方法">9.2 还解决不了乱码的话的处理方法</h3>
+<p>1、修改tomcat配置文件 ：设置编码！</p>
+<pre><code class="language-xml">&lt;Connector URIEncoding=&quot;utf-8&quot; port=&quot;8080&quot; protocol=&quot;HTTP/1.1&quot;
+          connectionTimeout=&quot;20000&quot;
+          redirectPort=&quot;8443&quot; /&gt;
+</code></pre>
+<p>2、自定义过滤器</p>
+<pre><code class="language-java">package com.kuang.filter;
+
+import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.Map;
+
+/**
+* 解决get和post请求 全部乱码的过滤器
+*/
+public class GenericEncodingFilter implements Filter {
+
+   @Override
+   public void destroy() {
+  }
+
+   @Override
+   public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+       //处理response的字符编码
+       HttpServletResponse myResponse=(HttpServletResponse) response;
+       myResponse.setContentType(&quot;text/html;charset=UTF-8&quot;);
+
+       // 转型为与协议相关对象
+       HttpServletRequest httpServletRequest = (HttpServletRequest) request;
+       // 对request包装增强
+       HttpServletRequest myrequest = new MyRequest(httpServletRequest);
+       chain.doFilter(myrequest, response);
+  }
+
+   @Override
+   public void init(FilterConfig filterConfig) throws ServletException {
+  }
+
+}
+
+//自定义request对象，HttpServletRequest的包装类
+class MyRequest extends HttpServletRequestWrapper {
+
+   private HttpServletRequest request;
+   //是否编码的标记
+   private boolean hasEncode;
+   //定义一个可以传入HttpServletRequest对象的构造函数，以便对其进行装饰
+   public MyRequest(HttpServletRequest request) {
+       super(request);// super必须写
+       this.request = request;
+  }
+
+   // 对需要增强方法 进行覆盖
+   @Override
+   public Map getParameterMap() {
+       // 先获得请求方式
+       String method = request.getMethod();
+       if (method.equalsIgnoreCase(&quot;post&quot;)) {
+           // post请求
+           try {
+               // 处理post乱码
+               request.setCharacterEncoding(&quot;utf-8&quot;);
+               return request.getParameterMap();
+          } catch (UnsupportedEncodingException e) {
+               e.printStackTrace();
+          }
+      } else if (method.equalsIgnoreCase(&quot;get&quot;)) {
+           // get请求
+           Map&lt;String, String[]&gt; parameterMap = request.getParameterMap();
+           if (!hasEncode) { // 确保get手动编码逻辑只运行一次
+               for (String parameterName : parameterMap.keySet()) {
+                   String[] values = parameterMap.get(parameterName);
+                   if (values != null) {
+                       for (int i = 0; i &lt; values.length; i++) {
+                           try {
+                               // 处理get乱码
+                               values[i] = new String(values[i]
+                                      .getBytes(&quot;ISO-8859-1&quot;), &quot;utf-8&quot;);
+                          } catch (UnsupportedEncodingException e) {
+                               e.printStackTrace();
+                          }
+                      }
+                  }
+              }
+               hasEncode = true;
+          }
+           return parameterMap;
+      }
+       return super.getParameterMap();
+  }
+
+   //取一个值
+   @Override
+   public String getParameter(String name) {
+       Map&lt;String, String[]&gt; parameterMap = getParameterMap();
+       String[] values = parameterMap.get(name);
+       if (values == null) {
+           return null;
+      }
+       return values[0]; // 取回参数的第一个值
+  }
+
+   //取所有值
+   @Override
+   public String[] getParameterValues(String name) {
+       Map&lt;String, String[]&gt; parameterMap = getParameterMap();
+       String[] values = parameterMap.get(name);
+       return values;
+  }
+}
+</code></pre>
+<p>这个是网上大神写的，一般情况下，SpringMVC默认的乱码处理就已经能够很好的解决了！</p>
+<p><strong>然后在web.xml中配置这个过滤器即可！</strong></p>
+<p>乱码问题，需要平时多注意，在尽可能能设置编码的地方，都设置为统一编码 UTF-8！</p>
+<h2 id="10-json">10. JSON</h2>
+<h3 id="101-什么是json">10.1 什么是JSON？</h3>
+<ul>
+<li>JSON(JavaScript Object Notation, JS 对象标记) 是一种轻量级的<strong>数据交换格式</strong>，目前使用特别广泛。</li>
+<li>采用完全独立于编程语言的==<strong>文本格式</strong>==来存储和表示数据。</li>
+<li>简洁和清晰的层次结构使得 JSON 成为理想的数据交换语言。</li>
+<li>易于人阅读和编写，同时也易于机器解析和生成，并有效地提升网络传输效率。</li>
+</ul>
+<p>在 JavaScript 语言中，一切都是对象。因此，任何JavaScript 支持的类型都可以通过 JSON 来表示，例如字符串、数字、对象、数组等。看看他的要求和语法格式：</p>
+<ul>
+<li>对象表示为键值对，数据由逗号分隔</li>
+<li>花括号保存对象</li>
+<li>方括号保存数组</li>
+</ul>
+<p><strong>JSON 键值对</strong>是用来保存 JavaScript 对象的一种方式，和 JavaScript 对象的写法也大同小异，键/值对组合中的键名写在前面并用双引号 &quot;&quot; 包裹，使用冒号 : 分隔，然后紧接着值：</p>
+<pre><code class="language-html">{&quot;name&quot;: &quot;QinJiang&quot;}
+{&quot;age&quot;: &quot;3&quot;}
+{&quot;sex&quot;: &quot;男&quot;}
+</code></pre>
+<p>很多人搞不清楚 JSON 和 JavaScript 对象的关系，甚至连谁是谁都不清楚。其实，可以这么理解：</p>
+<p>JSON 是 JavaScript 对象的字符串表示法，它使用文本表示一个 JS 对象的信息，本质是一个字符串。</p>
+<pre><code class="language-js">var obj = {a: 'Hello', b: 'World'}; //这是一个对象，注意键名也是可以使用引号包裹的
+var json = '{&quot;a&quot;: &quot;Hello&quot;, &quot;b&quot;: &quot;World&quot;}'; //这是一个 JSON 字符串，本质是一个字符串
+</code></pre>
+<h3 id="102-json和js互转">10.2 JSON和JS互转</h3>
+<p><strong>JSON 和 JavaScript 对象互转</strong></p>
+<p>要实现从JSON字符串转换为JavaScript 对象，使用 JSON.parse() 方法：</p>
+<pre><code class="language-js">var obj = JSON.parse('{&quot;a&quot;: &quot;Hello&quot;, &quot;b&quot;: &quot;World&quot;}');
+//结果是 {a: 'Hello', b: 'World'}
+</code></pre>
+<p>要实现从JavaScript 对象转换为JSON字符串，使用 JSON.stringify() 方法：</p>
+<pre><code class="language-js">var json = JSON.stringify({a: 'Hello', b: 'World'});
+//结果是 '{&quot;a&quot;: &quot;Hello&quot;, &quot;b&quot;: &quot;World&quot;}'
+</code></pre>
+<h2 id="11-拦截器">11. 拦截器</h2>
+<h3 id="111-概述">11.1 概述</h3>
+<p>SpringMVC的处理器拦截器类似于Servlet开发中的过滤器Filter,用于对处理器进行预处理和后处理。开发者可以自己定义一些拦截器来实现特定的功能。</p>
+<p><strong>过滤器与拦截器的区别：</strong><mark>拦截器是AOP思想的具体应用</mark>。</p>
+<p><strong>过滤器</strong></p>
+<ul>
+<li>servlet规范中的一部分，任何java web工程都可以使用</li>
+<li>*<em>在url-pattern中配置了/<em>之后，可以对所有要访问的资源进行拦截</em></em></li>
+</ul>
+<p><strong>拦截器</strong></p>
+<ul>
+<li>拦截器是SpringMVC框架自己的，只有使用了SpringMVC框架的工程才能使用</li>
+<li>拦截器<strong>只会拦截访问的控制器方法</strong>， 如果访问的是jsp/html/css/image/js是不会进行拦截的</li>
+</ul>
+<h3 id="112-自定义拦截器">11.2 自定义拦截器</h3>
+<p>想要自定义拦截器，<strong><mark>必须实现 HandlerInterceptor 接口</mark></strong>。</p>
+<p>1、新建一个Moudule ， springmvc-09-Interceptor  ， 添加web支持</p>
+<p>2、配置web.xml 和 applicationContext.xml 文件</p>
+<p>3、编写一个拦截器</p>
+<pre><code class="language-java">package cn.edu.bupt.config;
+
+import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+public class MyInterceptor implements HandlerInterceptor {
+    @Override
+    //return true; 执行下一个拦截器，放行
+    //return false;  不执行下一个拦截器
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        System.out.println(&quot;============处理前=============&quot;);
+        return true;
+    }
+
+    @Override
+    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
+        System.out.println(&quot;============处理后=============&quot;);
+    }
+
+    @Override
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+        System.out.println(&quot;============清理=============&quot;);
+    }
+}
+</code></pre>
+<p>4、在springmvc的配置文件中配置拦截器</p>
+<blockquote>
+<p><mark>/** :包括路径及其子路径</mark></p>
+<p><mark><strong>/admin/* 拦截的是/admin/add等等这种 , /admin/add/user不会被拦截</strong></mark></p>
+<p><mark><strong>/admin/</strong> 拦截的是/admin/下的所有**</mark></p>
+</blockquote>
+<pre><code class="language-xml">&lt;!--拦截器配置--&gt;
+&lt;mvc:interceptors&gt;
+    &lt;!--/** 包括路径及其子路径--&gt;
+    &lt;!--/admin/* 拦截的是/admin/add等等这种 , /admin/add/user不会被拦截--&gt;
+    &lt;!--/admin/** 拦截的是/admin/下的所有--&gt;
+    &lt;mvc:interceptor&gt;
+        &lt;mvc:mapping path=&quot;/**&quot;/&gt;
+        &lt;bean class=&quot;cn.edu.bupt.config.MyInterceptor&quot;/&gt;
+    &lt;/mvc:interceptor&gt;
+&lt;/mvc:interceptors&gt;
+</code></pre>
+<p>5、编写一个Controller，接收请求</p>
+<pre><code class="language-java">package cn.edu.bupt.controller;
+
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class TestController {
+    @RequestMapping(&quot;/t1&quot;)
+    public String test() {
+        System.out.println(&quot;TestController==&gt; test()执行了&quot;);
+        return &quot;OK&quot;;
+    }
+}
+</code></pre>
+<p>6、启动tomcat 测试一下！</p>
+<figure data-type="image" tabindex="7"><img src="https://chase-don.github.io//post-images/image-20210507233934892.png" alt="image-20210507233934892" loading="lazy"></figure>
+<p>补充：</p>
+<p>当把拦截器的方法<code>preHandle</code>返回值改为false，则出现：  <strong><mark>test方法没有执行！</mark></strong></p>
+<pre><code class="language-java">public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+    System.out.println(&quot;============处理前=============&quot;);
+    return false;
+}
+</code></pre>
+<figure data-type="image" tabindex="8"><img src="https://chase-don.github.io//post-images/image-20210507234653894.png" alt="image-20210507234653894" loading="lazy"></figure>
+<figure data-type="image" tabindex="9"><img src="https://chase-don.github.io//post-images/image-20210507234707183.png" alt="image-20210507234707183" loading="lazy"></figure>
+<h3 id="113-登录判断验证">11.3 登录判断验证</h3>
+<p><strong>实现思路</strong></p>
+<p>1、有一个登陆页面，需要写一个controller访问页面。</p>
+<p>2、登陆页面有一提交表单的动作。需要在controller中处理。判断用户名密码是否正确。如果正确，向session中写入用户信息。<em>返回登陆成功。</em></p>
+<p>3、拦截用户请求，判断用户是否登陆。如果用户已经登陆。放行， 如果用户未登陆，跳转到登陆页面</p>
+<p><strong>测试：</strong></p>
+<p>1、编写一个登陆页面  login.jsp</p>
+<pre><code class="language-jsp">&lt;%@ page contentType=&quot;text/html;charset=UTF-8&quot; language=&quot;java&quot; %&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;Title&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;%--在Web-inf下面的所有页面或者资源,只能通过controller,或者servlet进行访问--%&gt;
+
+&lt;h1&gt;登录页面&lt;/h1&gt;
+
+&lt;form action=&quot;${pageContext.request.contextPath}/user/login&quot; method=&quot;post&quot;&gt;
+    用户名：&lt;input type=&quot;text&quot; name=&quot;username&quot;/&gt;
+    密码：&lt;input type=&quot;text&quot; name=&quot;password&quot;/&gt;
+    &lt;input type=&quot;submit&quot; value=&quot;提交&quot;&gt;
+&lt;/form&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>2、编写一个Controller处理请求</p>
+<pre><code class="language-java">package cn.edu.bupt.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import javax.servlet.http.HttpSession;
+
+@Controller
+@RequestMapping(&quot;/user&quot;)
+public class LoginController {
+
+    @RequestMapping(&quot;/main&quot;)
+    public String main() {
+        return &quot;main&quot;;
+    }
+
+    @RequestMapping(&quot;/goLogin&quot;)
+    public String login() {
+        return &quot;login&quot;;
+    }
+
+
+    @RequestMapping(&quot;/login&quot;)
+    public String login(HttpSession session, String username, String password, Model model) {
+
+        //把用户信息存在session中
+        session.setAttribute(&quot;userLoginInfo&quot;, username);
+        model.addAttribute(&quot;username&quot;, username);
+        return &quot;main&quot;;
+    }
+
+    @RequestMapping(&quot;/goOut&quot;)
+    public String goOut(HttpSession session) {
+        session.removeAttribute(&quot;userLoginInfo&quot;);
+        return &quot;main&quot;;
+    }
+
+}
+</code></pre>
+<p>3、编写一个登陆成功的页面 main.jsp</p>
+<pre><code class="language-jsp">&lt;%@ page contentType=&quot;text/html;charset=UTF-8&quot; language=&quot;java&quot; %&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;Title&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;h1&gt;首页&lt;/h1&gt;
+
+&lt;span&gt;${username}&lt;/span&gt;
+
+&lt;p&gt;
+    &lt;a href=&quot;${pageContext.request.contextPath}/user/goOut&quot;&gt;注销&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>4、在 index 页面上测试跳转！启动Tomcat 测试，未登录也可以进入主页！</p>
+<pre><code class="language-jsp">&lt;%@ page contentType=&quot;text/html;charset=UTF-8&quot; language=&quot;java&quot; %&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;$Title$&lt;/title&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+
+
+  &lt;h1&gt;&lt;a href=&quot;${pageContext.request.contextPath}/user/goLogin&quot;&gt;登录页面&lt;/a&gt;&lt;/h1&gt;
+
+  &lt;h1&gt;&lt;a href=&quot;${pageContext.request.contextPath}/user/main&quot;&gt;首页&lt;/a&gt;&lt;/h1&gt;
+
+
+  &lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>5、编写用户登录拦截器</p>
+<pre><code class="language-java">package cn.edu.bupt.config;
+
+import org.springframework.web.servlet.HandlerInterceptor;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+public class LoginInterceptor implements HandlerInterceptor {
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        HttpSession session = request.getSession();
+        //放行：判断什么情况下登录了
+        if (session.getAttribute(&quot;userLoginInfo&quot;) != null) {
+            return true;
+        }
+
+        //登录页面也会放行
+        if (request.getRequestURI().contains(&quot;goLogin&quot;)) {
+            return true;
+        }
+
+        //说明我在提交登录
+        if (request.getRequestURI().contains(&quot;login&quot;)) {
+            return true;
+        }
+
+        //判断什么情况下没有登录
+        request.getRequestDispatcher(&quot;/WEB-INF/jsp/login.jsp&quot;).forward(request, response);
+        return false;
+    }
+}
+</code></pre>
+<p>6、在Springmvc的配置文件中注册拦截器</p>
+<pre><code class="language-xml">&lt;!--拦截器配置--&gt;
+&lt;mvc:interceptors&gt;
+    &lt;!--/** 包括路径及其子路径--&gt;
+    &lt;!--/admin/* 拦截的是/admin/add等等这种 , /admin/add/user不会被拦截--&gt;
+    &lt;!--/admin/** 拦截的是/admin/下的所有--&gt;
+    &lt;mvc:interceptor&gt;
+        &lt;mvc:mapping path=&quot;/**&quot;/&gt;
+        &lt;bean class=&quot;cn.edu.bupt.config.MyInterceptor&quot;/&gt;
+    &lt;/mvc:interceptor&gt;
+    &lt;mvc:interceptor&gt;
+        &lt;mvc:mapping path=&quot;/user/**&quot;/&gt;
+        &lt;bean class=&quot;cn.edu.bupt.config.LoginInterceptor&quot;/&gt;
+    &lt;/mvc:interceptor&gt;
+&lt;/mvc:interceptors&gt;
+</code></pre>
+<p>7、再次重启Tomcat测试！</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://chase-don.github.io/tag/OQTcqye4n/" class="tag">
+                    SSM
+                  </a>
+                
+                  <a href="https://chase-don.github.io/tag/d1Ec0O0Rz7/" class="tag">
+                    学习笔记
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://chase-don.github.io/post/spring-2021125/">
+                  <h3 class="post-title">
+                    Spring 2021.1.25
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>
