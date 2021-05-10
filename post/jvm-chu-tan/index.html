@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>JVM初探 | Loro</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://chase-don.github.io//favicon.ico?v=1620652926563">
+<link rel="stylesheet" href="https://chase-don.github.io//styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="
+请你谈谈对JVM的理解   java-&gt; .class -&gt; jvm
+java8虚拟机和之前的变化更新？
+JVM常用调优参数有哪些
+内存快照如何抓取，怎么分析Dump文件？
+关于类加载器的认识？
+
+1. JVM的位置
+
+2. ..." />
+    <meta name="keywords" content="JVM" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://chase-don.github.io/">
+        <img src="https://chase-don.github.io//images/avatar.png?v=1620652926563" class="site-logo">
+        <h1 class="site-title">Loro</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      表现不俗
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://chase-don.github.io//atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">JVM初探</h2>
+            <div class="post-date">2020-12-29</div>
+            
+            <div class="post-content" v-pre>
+              <ul>
+<li>请你谈谈对JVM的理解   java-&gt; .class -&gt; jvm</li>
+<li>java8虚拟机和之前的变化更新？</li>
+<li>JVM常用调优参数有哪些</li>
+<li>内存快照如何抓取，怎么分析Dump文件？</li>
+<li>关于类加载器的认识？</li>
+</ul>
+<h2 id="1-jvm的位置">1. JVM的位置</h2>
+<figure data-type="image" tabindex="1"><img src="https://chase-don.github.io//post-images/1616409703634.png" alt="" loading="lazy"></figure>
+<h2 id="2-jvm的体系结构">2. JVM的体系结构</h2>
+<p>整体框架图：<br>
+<img src="https://chase-don.github.io//post-images/1616409803998.png" alt="" loading="lazy"></p>
+<figure data-type="image" tabindex="2"><img src="https://chase-don.github.io//post-images/1616409849946.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="3"><img src="https://chase-don.github.io//post-images/1616409885966.png" alt="" loading="lazy"></figure>
+<h2 id="3-类加载器">3. 类加载器</h2>
+<p>​	作用： 加载class文件</p>
+<figure data-type="image" tabindex="4"><img src="https://chase-don.github.io//post-images/1616409910791.png" alt="" loading="lazy"></figure>
+<ol>
+<li>
+<p>虚拟机自带的加载器</p>
+</li>
+<li>
+<p>启动类(根)加载器</p>
+</li>
+<li>
+<p>扩展类加载器</p>
+</li>
+<li>
+<p>应用程序(系统类)加载器</p>
+</li>
+<li>
+<p><strong>百度双亲委派机制</strong></p>
+</li>
+</ol>
+<h2 id="4-native重点">4. Native（重点）</h2>
+<pre><code class="language-java">public static void main(String[] args) {
+    new Thread(() -&gt; {}, &quot;my thread name&quot;).start();
+}
+
+// native：凡是带了native关键字的，说明java的作用范围达不到了，会去调用底层C语言的库！
+//会进入本地方法栈，本地方法栈调用本地方法接口(JNI, java native interface)
+//JNI的作用：扩展java的使用，融合不同的编程语言为Java所用  最初：C,C++
+//Java诞生的时候，C/C++横行，要立足就必须要有调用C/C++的程序
+//它在内存区域中专门开辟了一块标记区域： Native Method Stack，登记Native方法
+//在最终执行的时候，通过JNI加载本地方法库中的方法
+private native void start0();
+</code></pre>
+<h2 id="5-方法区method-area">5. 方法区（Method Area）</h2>
+<p>​	方法区是被所有线程共享，所有字段和方法字节码，以及一些特殊方法，如构造函数，接口代码也在此定义，简单说，<strong>所有定义的方法的信息都保存在该区域，此区域属于共享区间</strong></p>
+<p>​	<mark><strong>静态变量、常量、类信息（构造方法、接口定义）、运行时的常量池存在方法区中，但是，实例变量存在堆内存中，和方法区无关</strong></mark>  （static、final、Class、常量池）</p>
+<p>​		注意：jdk1.7以后，常量池逻辑上属于方法区，实际存放在堆中</p>
+<h2 id="6-栈">6. 栈</h2>
+<p>栈：栈内存，主管程序的运行，生命周期和线程同步；</p>
+<p>线程结束，栈内存就释放，对于栈来说，<strong>不会存在垃圾回收问题</strong></p>
+<p>一旦线程结束，栈就over！</p>
+<p><mark><strong>栈：8种基本类型 + 对象引用 + 实例方法</strong></mark></p>
+<p>栈运行原理：<strong>栈帧</strong><br>
+<img src="https://chase-don.github.io//post-images/1616409937018.png" alt="" loading="lazy"></p>
+<ul>
+<li>栈 +堆+方法区：交互关系</li>
+</ul>
+<p>画出一个对象在内存中实例化的过程</p>
+<h2 id="7-堆">7. 堆</h2>
+<h3 id="71heap一个jvm只有一个堆内存堆内存的大小是可以调节的">7.1Heap，一个JVM只有一个堆内存，堆内存的大小是可以调节的。</h3>
+<h3 id="72类加载器读取了类文件后一般会把什么东西放到堆中">7.2类加载器读取了类文件后，一般会把什么东西放到堆中？</h3>
+<p><strong>类，方法，常量，变量等，保存我们所有引用类型的真实对象（实例）</strong></p>
+<h3 id="73-堆内存中还要细分为三个区域">7.3 堆内存中还要细分为三个区域：</h3>
+<ul>
+<li>新生区（伊甸园区） Young/New</li>
+<li>养老区  Old</li>
+<li>永久区  Perm  (现在被元空间取代，自己查证一下)</li>
+</ul>
+<figure data-type="image" tabindex="5"><img src="https://chase-don.github.io//post-images/1616409953115.png" alt="" loading="lazy"></figure>
+<p>GC垃圾回收：<strong><mark>主要是在伊甸园区和养老区</mark></strong></p>
+<p>假设内存满了，<strong>OOM(OutOfMemory)</strong>，堆内存不够！</p>
+<p>在jdk1.8以后，永久存储区改了个名字 ---&gt;  <mark><strong>元空间</strong></mark></p>
+<h4 id="731-新生区">7.3.1 新生区</h4>
+<ul>
+<li>一个类诞生和成长的地方，甚至死亡；能在新生区活下来就能进入养老区（老年区）</li>
+<li>新生区分为两个区：伊甸园区和幸存者区（0,1）
+<ul>
+<li>所有的对象都是在 伊甸园区 new出来的</li>
+<li>经过研究，99%的对象都是临时对象！</li>
+<li><strong>过程：伊甸园区满了进行一次轻gc，没被回收的进入幸存者区；经过n次循环后，幸存区满了，整个新生区都爆满进行一次重gc，幸存下来的可以进入养老区，养老区满后会出现OOM</strong></li>
+</ul>
+</li>
+</ul>
+<h4 id="732-老年区略">7.3.2 老年区（略）</h4>
+<h4 id="733-永久区">7.3.3 永久区</h4>
+<p>这个区域常驻于内存中。用于存放JDK自身携带的Class对象，Interface元数据，存储的是Java运行时的一些环境或类信息，**这个区域不存在垃圾回收！**关闭虚拟机就会释放这个区域的内存。</p>
+<p>一个启动类，加载了大量的第三方jar包；Tomcat部署了太多的应用；大量动态生成的反射类，不断地被加载，直到内存满，就会出现OOM。</p>
+<ul>
+<li>jdk1.6之前： 永久代，常量池是在方法区；</li>
+<li>jdk1.7：永久代，但是慢慢退化了，提出<strong>去永久代</strong>，常量池在堆中</li>
+<li>jdk1.8后： 无永久代，<strong>常量池在元空间</strong><br>
+<img src="https://chase-don.github.io//post-images/1616409973816.png" alt="" loading="lazy"><br>
+元空间：逻辑上存在，物理上不存在（具体可见Demo02）</li>
+</ul>
+<p><mark><strong>出现OOM故障时的方法:</strong></mark></p>
+<ol>
+<li>
+<p>尝试扩大堆内存看结果</p>
+</li>
+<li>
+<p>分析内存，看一下哪个地方出了问题（专业工具）</p>
+<p>​	a. 能够看到代码第几行出错：内存快照分析工具，<strong>eclipse（MAT）,现常用（Jprofiler）</strong><br>
+​    b. Debug，一行行分析代码</p>
+</li>
+</ol>
+<p><strong>MAT,Jprofiler作用：</strong></p>
+<ul>
+<li>分析Dump文件，快速定位内存泄漏；</li>
+<li>获得堆中的数据</li>
+<li>获得大的对象</li>
+<li>.....(百度)</li>
+</ul>
+<h2 id="8-gc-垃圾回收">8. GC: 垃圾回收</h2>
+<ol>
+<li>
+<p><strong>垃圾回收的主要区域是：堆和方法区</strong></p>
+</li>
+<li>
+<p>JVM在进行GC时，并不是对堆中（伊甸园区，幸存区[from,to]，老年区）这三个区域统一回收。大部分时 候，回收都是新生代！</p>
+</li>
+<li>
+<p>GC两种类：轻GC（普通GC）和重GC（全局GC）</p>
+</li>
+</ol>
+<p>GC相关题目：</p>
+<ul>
+<li>JVM的内存模型和分区？详细到每个区放什么？</li>
+<li>堆里面的分区有哪些？ Eden，from，to，老年区。 说说他们的特点？</li>
+<li>常用的GC算法有哪些？<mark><strong>标记清除法/标记整理(压缩)法/复制算法/引用计数法</strong></mark>      怎么用的？</li>
+<li>轻GC 和 重GC 分别在什么时候发生？</li>
+</ul>
+<h3 id="81-引用计数法">8.1 引用计数法</h3>
+<p>原理：此对象有一个引用，则+1；删除一个引用，则-1。只用收集计数为0的对象。<br>
+缺点：无法处理循环引用的问题。如：对象A和B分别有字段b、a，令A.b=B和B.a=A，除此之外这2个对象再无任何引用，那实际上这2个对象已经不可能再被访问，但是引用计数算法却无法回收他们。</p>
+<figure data-type="image" tabindex="6"><img src="https://chase-don.github.io//post-images/1616409987072.png" alt="" loading="lazy"></figure>
+<h3 id="82-复制算法">8.2 复制算法</h3>
+<p><img src="https://chase-don.github.io//post-images/1616410002661.png" alt="" loading="lazy"><br>
+<img src="https://chase-don.github.io//post-images/1616410009388.png" alt="" loading="lazy"></p>
+<ul>
+<li>好处：没有内存的碎片</li>
+<li>坏处：浪费了内存空间，幸存区有一般空间永远是空（To）</li>
+</ul>
+<p><mark><strong>复制算法最佳使用场景：对象存活度较低的 ---&gt; 新生区</strong></mark></p>
+<h3 id="83-标记清除算法">8.3 标记清除算法</h3>
+<figure data-type="image" tabindex="7"><img src="https://chase-don.github.io//post-images/1616410018504.png" alt="" loading="lazy"></figure>
+<ul>
+<li>优点：不需要额外的空间！</li>
+<li>缺点：两次扫描严重浪费时间；会产生内存碎片</li>
+</ul>
+<h3 id="84-标记压缩法">8.4 标记压缩法</h3>
+<figure data-type="image" tabindex="8"><img src="https://chase-don.github.io//post-images/1616410025234.png" alt="" loading="lazy"></figure>
+<p><strong>优化方式： 先标记清除几次，再进行压缩</strong></p>
+<h3 id="85-总结">8.5 总结</h3>
+<p>内存效率： 复制算法 &gt; 标记清除算法 &gt; 标记压缩算法（时间复杂度）</p>
+<p>内存整齐度：复制算法 = 标记压缩算法 &gt; 标记清除算法</p>
+<p>内存利用率：标记压缩算法 = 标记清除算法 &gt; 复制算法</p>
+<p>思考：有没有最优算法？</p>
+<p>答案：没有，没有最好的算法，只有最合适的   ---&gt;   <mark><strong>GC：分代收集算法</strong></mark></p>
+<p><strong>分代收集算法：</strong></p>
+<p><strong>年轻代：存活率低 ---&gt; 复制算法</strong></p>
+<p><strong>老年代：区域大；存活率高 ---&gt; 标记清除 + 标记压缩混合实现（即清楚几次压缩一次）</strong></p>
+<h2 id="9-jmmjava-memory-modeljava内存模型">9. JMM：Java Memory Model（Java内存模型）</h2>
+<ol>
+<li>
+<p>什么是JMM?</p>
+</li>
+<li>
+<p>它是用来干嘛的？</p>
+<p>作用：缓存一致性协议，用于定义数据读写的规则</p>
+</li>
+<li>
+<p>它该如何学习？</p>
+</li>
+</ol>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://chase-don.github.io/tag/CHCparGDRP/" class="tag">
+                    JVM
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://chase-don.github.io/post/hello-gridea/">
+                  <h3 class="post-title">
+                    Hello Gridea
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>
